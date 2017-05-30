@@ -1,5 +1,6 @@
 #include <frnetlib/TcpSocket.h>
 #include <frnetlib/TcpListener.h>
+#include <iostream>
 
 using namespace std;
 
@@ -27,6 +28,10 @@ int main(){
 	{
 		cout << "LISTENER:Waiting for a new connection ..." << endl;
 		//Accept a new connection
+
+		fr::Socket::Status status;
+
+
 		if (listener.accept(client) != fr::Socket::Success)
 		{
 			cout << "LISTENER:Failed to accept client, shutdown" << endl;
@@ -37,35 +42,40 @@ int main(){
 		{
 			try
 			{
-				fr::Packet packet;
-				if (client.receive(packet) != fr::Socket::Success)
-				{
-					cout << "LISTENER:Failed to receive request" << endl;
+
+				string recv_str;
+				recv_str.reserve(4096);
+				size_t received_size;
+
+				status = client.receive_raw((void*)recv_str.c_str(), 4096, received_size);
+
+				if (status != fr::Socket::Success ) {
+					cout << "LISTENER:Failed to receive request, we got status: " << status << endl;
+					break;
+				}
+				recv_str.resize(received_size);				
+
+				cout << "LISTENER:We got from client:" << recv_str << ", size is: "<< received_size << endl;
+
+				status = client.send_raw(recv_str.c_str(), received_size);
+				if (status != fr::Socket::Success) {
+					cout << "LISTENER:Seems got something wrong when sending, we got status: " << status << endl;
+					break;
 				}
 
-				std::string str1, str2;
-				float age;
-				packet >> str1 >> age >> str2;
+				cout << "LISTENER:Send OK" << endl;
 
-				cout << "LISTENER:We got from client:" << str1 << age << str2 << endl;
-
-
-				if (client.send(packet) != fr::Socket::Success)
-				{
-					cout << "LISTENER:Seems got something wrong when sending" << endl;
-					//return -2;
-				}
 			}
 			catch (const std::exception& e)
 			{
 				cout << "ERROR: " << e.what() << endl;
-				cout << "LISTENER:Seems that the client stop the connection, just destroy current connection and wait for another" << endl;
-				//Close connection
-				client.close_socket();
 				break;
 			}
 		} // inner while
 
+		cout << "LISTENER:Seems that the client stop the connection, just destroy current connection and wait for another" << endl;
+		//Close connection
+		client.close_socket();
 
 	}// out while
 
