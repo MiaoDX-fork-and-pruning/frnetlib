@@ -41,23 +41,24 @@ int main(){
 		while (true) // infinite loop for the communication
 		{
 			try
-			{
-
-				string recv_str;
-				recv_str.reserve(4096);
+			{							
 				size_t received_size;
 
-				status = client.receive_raw((void*)recv_str.c_str(), 4096, received_size);
+				char recv_str_buffer[RECV_CHUNK_SIZE];
+				
+				status = client.receive_raw(recv_str_buffer, RECV_CHUNK_SIZE, received_size);
 
 				if (status != fr::Socket::Success ) {
 					cout << "LISTENER:Failed to receive request, we got status: " << status << endl;
 					break;
 				}
+
+				string recv_str(recv_str_buffer);
 				recv_str.resize(received_size);				
 
 				cout << "LISTENER:We got from client:" << recv_str << ", size is: "<< received_size << endl;
 
-				status = client.send_raw(recv_str.c_str(), received_size);
+				status = client.send_raw(recv_str.c_str(), recv_str.length());
 				if (status != fr::Socket::Success) {
 					cout << "LISTENER:Seems got something wrong when sending, we got status: " << status << endl;
 					break;
