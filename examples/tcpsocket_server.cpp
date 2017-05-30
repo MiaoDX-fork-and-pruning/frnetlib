@@ -41,6 +41,7 @@ int main(){
 				if (client.receive(packet) != fr::Socket::Success)
 				{
 					cout << "LISTENER:Failed to receive request" << endl;
+					break;
 				}
 
 				std::string str1, str2;
@@ -53,19 +54,20 @@ int main(){
 				if (client.send(packet) != fr::Socket::Success)
 				{
 					cout << "LISTENER:Seems got something wrong when sending" << endl;
+					break;
 					//return -2;
 				}
 			}
 			catch (const std::exception& e)
 			{
 				cout << "ERROR: " << e.what() << endl;
-				cout << "LISTENER:Seems that the client stop the connection, just destroy current connection and wait for another" << endl;
-				//Close connection
-				client.close_socket();
 				break;
 			}
 		} // inner while
 
+		cout << "LISTENER:Seems that the client stop the connection or we encounter an unknow error, just destroy current connection and wait for another" << endl;
+		//Close connection
+		client.close_socket();
 
 	}// out while
 
