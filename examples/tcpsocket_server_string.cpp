@@ -44,7 +44,8 @@ int main(){
 			{							
 				size_t received_size;
 
-				char recv_str_buffer[RECV_CHUNK_SIZE];
+				//char recv_str_buffer[RECV_CHUNK_SIZE];
+				char* recv_str_buffer = new char[RECV_CHUNK_SIZE];
 				
 				status = client.receive_raw(recv_str_buffer, RECV_CHUNK_SIZE, received_size);
 
